@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Index</title>
+    <!-- Link to the external CSS file -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+</head>
+
+<body>
+    <h1>A.I. Paint Program</h1>
+
+    <button onclick="window.location.href='/paint'">Go to A.I. Paint Program</button>
+
+    <br>
+
+    <img src="{{ url_for('static', filename='images/cute_frog.png') }}" alt="this is a cute frog created in the paint program" width="200" height="200">
+</body>
+
+</html>
+
+

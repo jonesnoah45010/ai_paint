@@ -4,8 +4,14 @@
 <head>
     <meta charset="utf-8">
     <title>Index</title>
-    <!-- Link to the external CSS file -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <script>
+        function showVideo() {
+            const video = document.getElementById('demoVideo');
+            video.style.display = 'block';
+            video.play();
+        }
+    </script>
 </head>
 
 <body>
@@ -13,11 +19,19 @@
 
     <button onclick="window.location.href='/paint'">Go to A.I. Paint Program</button>
 
+    <button onclick="showVideo()">Watch Demo Video</button>
+
     <br>
 
     <img src="{{ url_for('static', filename='images/cute_frog.png') }}" alt="this is a cute frog created in the paint program" width="200" height="200">
+
+    <div class="video-container">
+    <video id="demoVideo" width="640" height="360" controls style="display: none;">
+        <source src="{{ url_for('static', filename='videos/demo.mp4') }}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+</div>
 </body>
 
 </html>
-
 

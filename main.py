@@ -44,6 +44,8 @@ def paint():
 
 
 
+
+
 @app.route('/inpaint', methods=['POST'])
 def inpaint():
     try:
@@ -51,7 +53,13 @@ def inpaint():
             return jsonify({'error': 'No image file provided'}), 400
 
         image_file = request.files['image']
-        image_bytes = io.BytesIO(image_file.read())
+        image = Image.open(image_file.stream).convert("RGBA")
+
+        # Convert to PNG and store in BytesIO
+        image_png_bytes = io.BytesIO()
+        image.save(image_png_bytes, format="PNG")
+        image_png_bytes.seek(0)
+        image_png_bytes.name = "image.png"  # Crucial for OpenAI API
 
         # Extract form data
         coordinates_str = request.form.get("coordinates")
@@ -62,7 +70,6 @@ def inpaint():
         if not coordinates_str or not prompt:
             return jsonify({'error': 'Missing coordinates or prompt'}), 400
 
-        # Convert coordinates from string to list
         try:
             coordinates = json.loads(coordinates_str)
         except json.JSONDecodeError:
@@ -71,33 +78,32 @@ def inpaint():
         if not isinstance(coordinates, list) or len(coordinates) != 4:
             return jsonify({'error': 'Invalid coordinates format. Must be a list of four (x, y) tuples'}), 400
 
-        # Generate mask
-        mask_bytes = generate_mask_in_memory(image_bytes, coordinates)
+        # Generate mask from the PNG image
+        mask_bytes = generate_mask_in_memory(image_png_bytes, coordinates)
+        mask_bytes.name = "mask.png"  # Crucial for OpenAI API
 
         # Perform inpainting and get the image URL
-        image_url = inpaint_image_in_memory(image_bytes, mask_bytes, prompt)
+        image_url = inpaint_image_in_memory(image_png_bytes, mask_bytes, prompt)
         
         if not image_url:
             return jsonify({'error': 'Failed to generate inpainted image'}), 500
 
-
+        # Download the image from OpenAI’s response
         response = requests.get(image_url, stream=True)
         if response.status_code != 200:
             return jsonify({'error': 'Failed to download inpainted image'}), 500
 
         inpainted_image = Image.open(response.raw)
 
-        image_io = io.BytesIO()
-        inpainted_image.save(image_io, format="PNG")
-        image_io.seek(0)
-
-        return send_file(image_io, mimetype="image/png")
+        # Send final image back
+        output_bytes = io.BytesIO()
+        inpainted_image.save(output_bytes, format="PNG")
+        output_bytes.seek(0)
+        return send_file(output_bytes, mimetype="image/png")
 
     except Exception as e:
-        print(e)
+        print(f"An error occurred: {e}")
         return jsonify({'error': str(e)}), 500
-
-
 
 
 

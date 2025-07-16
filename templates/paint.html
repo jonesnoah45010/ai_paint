@@ -208,6 +208,7 @@
 
 
 
+
         function startPainting(event) {
             if (selecting) {
                 if (!selectionStart) {
@@ -219,17 +220,25 @@
                     setTimeout(() => promptForInpaint(), 100);
                     return;
                 }
-            } else if (paintingEnabled) { 
+            } else if (paintingEnabled) {
                 painting = true;
-                ctx.beginPath();
-                ctx.arc(event.offsetX, event.offsetY, brushSize / 2, 0, Math.PI * 2);
                 ctx.fillStyle = hexToRGBA(document.getElementById("colorPicker").value, brushOpacity);
-                ctx.fill();
+                const brushType = document.getElementById("lineCapSelect").value;
+
+                if (brushType === "square") {
+                    ctx.fillRect(event.offsetX - brushSize / 2, event.offsetY - brushSize / 2, brushSize, brushSize);
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(event.offsetX, event.offsetY, brushSize / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
                 ctx.beginPath();
                 ctx.moveTo(event.offsetX, event.offsetY);
                 saveCanvasState();
             }
         }
+
 
 
 
